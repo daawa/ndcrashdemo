@@ -7,6 +7,9 @@ import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
+
 import ru.ivanarh.jndcrash.NDCrashError;
 import ru.ivanarh.jndcrash.NDCrash;
 import ru.ivanarh.jndcrash.NDCrashUtils;
@@ -47,7 +50,13 @@ public class MainApplication extends Application {
         super.onCreate();
         // If it's a process for NDCrashService we don't need to initialize NDCrash signal handler.
         if (!NDCrashUtils.isMainProcess(this)) return;
-        mReportPath = getFilesDir().getAbsolutePath() + "/crash.txt";
+        mReportPath = getExternalFilesDir(null).getAbsolutePath() + "/crash.txt";
+        try {
+            new File(mReportPath).createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         final SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE);
         final NDCrashUnwinder unwinder = NDCrashUnwinder.values()[prefs.getInt(UNWINDER_FOR_NEXT_LAUNCH_KEY, 0)];
         final boolean outOfProcess = prefs.getBoolean(OUT_OF_PROCESS_KEY, false);
